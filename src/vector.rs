@@ -33,9 +33,13 @@ impl <K: AddAssign + SubAssign + MulAssign + Copy> Vector<K> {
 
 impl<K: fmt::Display> fmt::Display for Vector<K> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for elem in &self.data {
-            writeln!(f, "[{}]", elem)?;
+        write!(f, "[")?;
+        for (i, elem) in self.data.iter().enumerate() {
+            if i > 0 {
+                write!(f, ", ")?;
+            }
+            write!(f, "{}", elem)?;
         }
-        Ok(())
+        write!(f, "]")
     }
 }

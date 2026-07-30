@@ -53,11 +53,18 @@ impl <K: AddAssign + SubAssign + MulAssign + Copy> Matrix<K> {
 
 impl<K: fmt::Display> fmt::Display for Matrix<K> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for row in &self.data {
-            for elem in row {
-                write!(f, "{}", elem)?;  // O usa {:?} si quieres el formato de Vector
+        for (i, row) in self.data.iter().enumerate() {
+            if i > 0 {
+                writeln!(f)?;
             }
-            writeln!(f)?;
+            write!(f, "[")?;
+            for (j, elem) in row.iter().enumerate() {
+                if j > 0 {
+                    write!(f, ", ")?;
+                }
+                write!(f, "{}", elem)?;
+            }
+            write!(f, "]")?;
         }
         Ok(())
     }

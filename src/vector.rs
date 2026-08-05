@@ -1,6 +1,7 @@
-use std::ops::{AddAssign, SubAssign, MulAssign};
+use std::ops::{Add, Sub, Mul, AddAssign, SubAssign, MulAssign};
 use std::fmt;
 
+#[derive(Clone, Debug)]
 pub struct Vector<K> {
     pub data : Vec<K>
 }
@@ -15,6 +16,9 @@ impl<K: AddAssign + Copy> Vector<K> {
     // &mut self: Modifies the current vector (self) in place.
     // v: &Vector<K>: Immutable reference to the other vector (borrowed for reading without taking ownership).
      pub fn add(&mut self, v: &Vector<K>) { 
+        if self.data.len() != v.data.len() {
+            panic!("Vector dimensions must match");
+        }
         for i in 0..v.data.len(){
             self.data[i] += v.data[i]
         }
@@ -23,7 +27,10 @@ impl<K: AddAssign + Copy> Vector<K> {
 
 impl<K: SubAssign + Copy> Vector<K> {
     pub fn sub(&mut self, v: &Vector<K>) {
-         for i in 0..v.data.len(){
+        if self.data.len() != v.data.len() {
+            panic!("Vector dimensions must match");
+        }
+        for i in 0..v.data.len(){
             self.data[i] -= v.data[i]
         } 
     }
@@ -34,6 +41,36 @@ impl<K: MulAssign + Copy> Vector<K> {
         for i in 0..self.data.len(){
             self.data[i] *= a
         }
+    }
+}
+
+impl <K> Add for Vector<K>
+where K: AddAssign + Copy
+{
+    type Output = Self;
+    fn add(mut self, v: Self) -> Self {
+        Vector::add(&mut self, &v);
+        self
+    }
+}
+
+impl <K>  Sub for Vector<K>
+where K: SubAssign + Copy
+{
+    type Output = Self;
+    fn sub(mut self, v: Self) -> Self {
+        Vector::sub(&mut self, &v);
+        self
+    }
+}
+
+impl <K> Mul<K> for Vector<K>
+where K: MulAssign + Copy
+{
+    type Output = Self;
+    fn mul(mut self, a: K) -> Self {
+        self.scl(a);
+        self
     }
 }
 

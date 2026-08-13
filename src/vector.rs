@@ -80,6 +80,23 @@ impl<K, const N: usize> From<[K; N]> for Vector<K> {
     }
 }
 
+
+impl <K> Vector<K> {
+    pub fn dot(&self, v: &Self) -> K 
+    where K: Copy + Mul<Output = K> + AddAssign + Default
+    {
+        if self.data.len() != v.data.len(){
+            panic!("Vector dimensions must match")
+        }
+        let mut acc = K::default();
+        for (&a, &b) in self.data.iter().zip(v.data.iter())
+        {
+            acc += a*b
+        }
+        acc
+    }
+}
+
 impl<K: fmt::Display> fmt::Display for Vector<K> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (i, elem) in self.data.iter().enumerate() {

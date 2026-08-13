@@ -97,6 +97,19 @@ impl <K> Vector<K> {
     }
 }
 
+impl Vector<f32> {
+    pub fn norm_1(&self) -> f32 {
+        self.data.iter().map(|x| x.abs()).sum()
+    }
+    pub fn norm(&self) -> f32 {
+        self.dot(self).powf(0.5)
+    }
+
+    pub fn norm_inf(&self) -> f32 {
+        self.data.iter().fold(0.0, |max, &x| max.max(x.abs()))
+    }
+}
+
 impl<K: fmt::Display> fmt::Display for Vector<K> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (i, elem) in self.data.iter().enumerate() {

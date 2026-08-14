@@ -78,6 +78,25 @@ impl<K> Matrix <K>
         sum
     }
 
+    pub fn transpose(&self) -> Matrix<K>
+    where
+        K: Copy,
+    {
+        let (rows, cols) = self.shape();
+        if rows == 0 || cols == 0 {
+            return Matrix::new(Vec::new());
+        }
+        let mut result = Vec::with_capacity(cols);
+        for j in 0..cols {
+            let mut new_row = Vec::with_capacity(rows);
+            for i in 0..rows {
+                new_row.push(self.data[i][j]);
+            }
+            result.push(new_row);
+        }
+        Matrix::new(result)
+    }
+
 }
 
 impl<K: AddAssign + Copy> Matrix<K> {

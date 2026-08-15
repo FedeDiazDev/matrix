@@ -4,7 +4,7 @@ pub fn angle_cos(u: &Vector<f32>, v: &Vector<f32>) -> f32 {
     if u.norm() == 0. || v.norm() == 0. {
         panic!("Cannot compute angle with zero vector");
     }
-    if u.len() != v.len() {
+    if u.data.len() != v.data.len() {
         panic!("Vectors must have the same length");
     }
 

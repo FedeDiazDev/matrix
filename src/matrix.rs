@@ -1,4 +1,4 @@
-use std::ops::{Add, Sub, Mul, AddAssign, SubAssign, MulAssign};
+use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign};
 use std::fmt;
 use crate::Vector;
 
@@ -97,6 +97,59 @@ impl<K> Matrix <K>
         Matrix::new(result)
     }
 
+    pub fn row_echelon(&self) -> Matrix<K>
+    where
+    K: Copy + Default + PartialEq + Div<Output = K> + Mul<Output = K> + SubAssign
+    {
+        let (rows, cols) = self.shape();
+        if rows == 0 || cols == 0{
+            return self.clone()
+        }
+        let mut res = self.clone();
+        let mut pivot_row = 0;
+        let zero = K::default();
+
+        for col in 0..cols{
+            if pivot_row == rows{
+                break;
+            }
+            let mut selected_row = pivot_row;
+            while selected_row < rows && res.data[selected_row][col] == zero {
+                selected_row += 1;
+            }
+            if selected_row == rows {
+                continue;
+            }
+            
+            if selected_row != pivot_row{
+                res.data.swap(selected_row, pivot_row);
+            }
+            let pivot_val = res.data[pivot_row][col];
+            for j in 0..cols{
+                res.data[pivot_row][j] = res.data[pivot_row][j] / pivot_val; 
+            }
+            for r in 0..rows{
+                if r!= pivot_row{
+                    let factor = res.data[r][col];
+                    if factor != zero{
+                        for j in 0..cols{
+                            let sub = factor * res.data[pivot_row][j];
+                            res.data[r][j] -= sub;
+                        }
+                    }
+                }
+            }
+            pivot_row += 1;
+        }
+        for r in 0..rows {
+            for c in 0..cols {
+                if res.data[r][c] == zero {
+                    res.data[r][c] = zero;
+                }
+            }
+        }
+        res
+    }
 }
 
 impl<K: AddAssign + Copy> Matrix<K> {

@@ -1,4 +1,4 @@
-use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign};
+use std::ops::{Add, Sub, Mul, Div, Neg,AddAssign, SubAssign, MulAssign};
 use std::fmt;
 use crate::Vector;
 
@@ -149,6 +149,65 @@ impl<K> Matrix <K>
             }
         }
         res
+    }
+
+pub fn determinant(&self) -> K
+    where
+        K: Copy + Default + PartialEq + Div<Output = K> + Mul<Output = K> + SubAssign + Neg<Output = K>,
+    {
+        let (rows, cols) = self.shape();
+        if rows != cols {
+            panic!("Matrix must be square to compute its determinant");
+        }
+        if rows == 0 {
+            return K::default();
+        }
+        if rows == 1 {
+            return self.data[0][0];
+        }
+
+        let mut res = self.clone();
+        let mut swapped = false;
+        let zero = K::default();
+
+        for i in 0..rows {
+            let mut pivot_row = i;
+            while pivot_row < rows && res.data[pivot_row][i] == zero {
+                pivot_row += 1;
+            }
+
+            if pivot_row == rows {
+                return zero;
+            }
+
+            if pivot_row != i {
+                res.data.swap(pivot_row, i);
+                swapped = !swapped;
+            }
+
+            let pivot = res.data[i][i];
+
+            for r in (i + 1)..rows {
+                let current_val = res.data[r][i];
+                if current_val != zero {
+                    let factor = current_val / pivot;
+                    for j in i..cols {
+                        let sub = factor * res.data[i][j];
+                        res.data[r][j] -= sub;
+                    }
+                }
+            }
+        }
+        let mut det = res.data[0][0];
+        for i in 1..rows {
+            det = det * res.data[i][i];
+        }
+
+        if swapped {
+            -det
+        } else {
+            det
+        }
     }
 }
 

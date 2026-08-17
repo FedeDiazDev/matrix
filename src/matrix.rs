@@ -96,11 +96,13 @@ impl<K> Matrix <K>
         }
         Matrix::new(result)
     }
+}
 
-    pub fn row_echelon(&self) -> Matrix<K>
-    where
-    K: Copy + Default + PartialEq + Div<Output = K> + Mul<Output = K> + SubAssign
-    {
+impl<K> Matrix<K>
+where
+    K: Copy + Default + PartialEq + Div<Output = K> + Mul<Output = K> + SubAssign,
+{
+    pub fn row_echelon(&self) -> Matrix<K> {
         let (rows, cols) = self.shape();
         if rows == 0 || cols == 0{
             return self.clone()
@@ -151,9 +153,9 @@ impl<K> Matrix <K>
         res
     }
 
-pub fn determinant(&self) -> K
+    pub fn determinant(&self) -> K
     where
-        K: Copy + Default + PartialEq + Div<Output = K> + Mul<Output = K> + SubAssign + Neg<Output = K>,
+        K: Neg<Output = K>,
     {
         let (rows, cols) = self.shape();
         if rows != cols {
@@ -209,6 +211,101 @@ pub fn determinant(&self) -> K
             det
         }
     }
+    pub fn inverse(&self) -> Result<Matrix::<K>, &'static str> {
+        let (rows, cols) = self.shape();
+        if rows != cols || rows == 0 {
+            return Err("Matrix must be square and non-empty");
+        }
+        let zero = K::default();
+        let mut found_non_zero = None;
+        for r in 0..rows {
+            for c in 0..cols {
+                if self.data[r][c] != zero {
+                    found_non_zero = Some(self.data[r][c]);
+                    break;
+                }
+            }
+            if found_non_zero.is_some() {
+                break;
+            }
+        }
+
+        let one = match found_non_zero {
+            Some(val) => val / val,
+            None => return Err("Matrix is singular (all elements are zero)"),
+        };
+        let mut inv_data = vec![vec![zero; cols]; rows];
+        for i in 0..rows {
+            inv_data[i][i] = one;
+        }
+
+        let mut mat = self.clone();
+        let mut inv = Matrix::new(inv_data);
+
+        for i in 0..rows {
+            let mut pivot_row = i;
+            while pivot_row < rows && mat.data[pivot_row][i] == zero {
+                pivot_row += 1;
+            }
+
+            if pivot_row == rows {
+                return Err("Matrix is singular (not invertible)");
+            }
+
+            if pivot_row != i {
+                mat.data.swap(pivot_row, i);
+                inv.data.swap(pivot_row, i);
+            }
+
+            let pivot_val = mat.data[i][i];
+            for j in 0..cols {
+                if mat.data[i][j] != zero {
+                    mat.data[i][j] = mat.data[i][j] / pivot_val;
+                }
+                if inv.data[i][j] != zero {
+                    inv.data[i][j] = inv.data[i][j] / pivot_val;
+                }
+            }
+
+            for r in 0..rows {
+                if r != i {
+                    let factor = mat.data[r][i];
+                    if factor != zero {
+                        for j in 0..cols {
+                            let sub_mat = factor * mat.data[i][j];
+                            mat.data[r][j] -= sub_mat;
+
+                            let sub_inv = factor * inv.data[i][j];
+                            inv.data[r][j] -= sub_inv;
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(inv)
+    }
+
+    pub fn rank(&self) -> usize {
+        let (rows, cols) = self.shape();
+        if rows == 0 || cols == 0 {
+            return 0;
+        }
+
+        let ref_mat = self.row_echelon();
+        let zero = K::default();
+        let mut rank = 0;
+
+        for r in 0..rows {
+            let is_non_zero_row = ref_mat.data[r].iter().any(|&val| val != zero);
+            if is_non_zero_row {
+                rank += 1;
+            }
+        }
+
+        rank
+    }
+
 }
 
 impl<K: AddAssign + Copy> Matrix<K> {

@@ -7,7 +7,13 @@ pub struct Vector<K> {
 }
 
 impl<K> Vector<K> {
-    pub fn new(data: Vec<K>) -> Self {
+    pub fn new(data: Vec<K>) -> Self
+    where
+        K: crate::Numeric
+    {
+        if data.is_empty() {
+            panic!("Vector dimensions must be non-zero");
+        }
         Self { data }
     }
 }
@@ -74,7 +80,10 @@ where K: MulAssign + Copy
     }
 }
 
-impl<K, const N: usize> From<[K; N]> for Vector<K> {
+impl<K, const N: usize> From<[K; N]> for Vector<K>
+where
+    K: crate::Numeric
+{
     fn from(data: [K; N]) -> Self {
         Self::new(Vec::from(data))
     }

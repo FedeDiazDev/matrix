@@ -2,7 +2,7 @@ use matrix::Vector;
 
 fn cross_product<K>(u:&Vector<K>, v:&Vector<K>) -> Vector<K>
 where
-    K: Copy + std::ops::Mul<Output = K> + std::ops::Sub<Output = K>,
+    K: matrix::Numeric + std::ops::Sub<Output = K>,
 {
     if u.data.len() != 3 || v.data.len() != 3{
         panic!("Vectors must have 3 dimensions");

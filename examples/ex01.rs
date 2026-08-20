@@ -1,7 +1,7 @@
 use std::ops::{AddAssign, MulAssign};
 use matrix::{ Vector};
 
-pub fn linear_combination<V, K: Copy + MulAssign + AddAssign>(u: &[Vector<K>], coefs: &[K]) -> Vector<K>{
+pub fn linear_combination<V, K: matrix::Numeric + MulAssign + AddAssign>(u: &[Vector<K>], coefs: &[K]) -> Vector<K>{
     if u.is_empty() || coefs.is_empty(){
         panic!("The vectors or coeficients cannot be empty");
     }

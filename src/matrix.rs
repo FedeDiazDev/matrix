@@ -1,4 +1,4 @@
-use std::ops::{Add, Sub, Mul, Div, Neg,AddAssign, SubAssign, MulAssign};
+use std::ops::{Add, Sub, Mul, Neg, AddAssign, SubAssign, MulAssign};
 use std::fmt;
 use crate::Vector;
 
@@ -7,21 +7,39 @@ pub struct Matrix<K> {
     pub data: Vec<Vec<K>>,
 }
 
-impl<K> Matrix <K>
-{
-    pub fn shape(&self) -> (usize, usize){
+impl<K> Matrix<K> {
+    pub fn shape(&self) -> (usize, usize) {
         let rows = self.data.len();
-        let cols = if rows == 0 {0} else {self.data[0].len()};
+        let cols = if rows == 0 { 0 } else { self.data[0].len() };
         (rows, cols)
     }
+}
 
-    pub fn new(data: Vec<Vec<K>>)  -> Self{
+impl<K> Matrix<K>
+where
+    K: crate::Numeric,
+{
+    pub fn new(data: Vec<Vec<K>>) -> Self {
+        if data.is_empty() || data[0].is_empty() {
+            panic!("Matrix dimensions must be non-zero");
+        }
+        let cols = data[0].len();
+        for (i, row) in data.iter().enumerate() {
+            if row.len() != cols {
+                panic!(
+                    "Matrix row {} has a mismatched length of {} (expected {})",
+                    i,
+                    row.len(),
+                    cols
+                );
+            }
+        }
         Self { data }
     }
 
-   pub fn mul_vec(&self, vec: &Vector<K>) -> Vector<K>
+    pub fn mul_vec(&self, vec: &Vector<K>) -> Vector<K>
     where
-        K: Copy + Mul<Output = K> + AddAssign + Default, 
+        K: AddAssign,
     {
         let cols = if self.data.is_empty() { 0 } else { self.data[0].len() };
         if cols != vec.data.len() {
@@ -40,7 +58,7 @@ impl<K> Matrix <K>
 
     pub fn mul_mat(&self, mat: &Matrix<K>) -> Matrix<K>
     where
-        K: Copy + Mul<Output = K> + AddAssign + Default,
+        K: AddAssign,
     {
         let (rows_a, cols_a) = self.shape();
         let (rows_b, cols_b) = mat.shape();
@@ -65,7 +83,7 @@ impl<K> Matrix <K>
 
     pub fn trace(&self) -> K
     where
-        K: Copy + AddAssign + Default,
+        K: AddAssign,
     {
         let (rows, cols) = self.shape();
         if rows != cols {
@@ -78,10 +96,7 @@ impl<K> Matrix <K>
         sum
     }
 
-    pub fn transpose(&self) -> Matrix<K>
-    where
-        K: Copy,
-    {
+    pub fn transpose(&self) -> Matrix<K> {
         let (rows, cols) = self.shape();
         if rows == 0 || cols == 0 {
             return Matrix::new(Vec::new());
@@ -100,7 +115,7 @@ impl<K> Matrix <K>
 
 impl<K> Matrix<K>
 where
-    K: Copy + Default + PartialEq + Div<Output = K> + Mul<Output = K> + SubAssign,
+    K: crate::Numeric + SubAssign,
 {
     pub fn row_echelon(&self) -> Matrix<K> {
         let (rows, cols) = self.shape();
@@ -377,7 +392,10 @@ where
     }
 }
 
-impl<K, const R: usize, const C: usize> From<[[K; C]; R]> for Matrix<K> {
+impl<K, const R: usize, const C: usize> From<[[K; C]; R]> for Matrix<K>
+where
+    K: crate::Numeric
+{
     fn from(data: [[K; C]; R]) -> Self {
         let mut vec_data = Vec::with_capacity(R);
         for row in data {
